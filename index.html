@@ -202,9 +202,10 @@ function gate(){
   $('app').hidden=true;$('login').hidden=false;$('gbtn').hidden=true;$('tgonly').hidden=false;
   const b=$('tgbot');if(ST.bot_username){b.href='https://t.me/'+ST.bot_username;b.hidden=false}
 }
-const inviteLink=()=>ST.bot_username?'https://t.me/'+ST.bot_username+'?start='+me.ref_code:location.origin+'/?ref='+me.ref_code;
+const webLink=()=>location.origin+'/?ref='+me.ref_code;
+const inviteLink=()=>ST.bot_username&&ST.app_name?'https://t.me/'+ST.bot_username+'/'+ST.app_name+'?startapp='+me.ref_code:(ST.bot_username?'https://t.me/'+ST.bot_username+'?start='+me.ref_code:webLink());
 function shareInvite(){
-  const u='https://t.me/share/url?url='+encodeURIComponent(inviteLink())+'&text='+encodeURIComponent('Заходи в Skinvera: задания, монеты и скины CS2. Мой код: '+me.ref_code);
+  const u='https://t.me/share/url?url='+encodeURIComponent(inviteLink())+'&text='+encodeURIComponent('Заходи в Skinvera: задания, монеты и скины CS2. Мой код: '+me.ref_code+'\nЕсли ссылка выше не открывается, зайди в браузере: '+webLink());
   if(TG&&TG.openTelegramLink)TG.openTelegramLink(u);else window.open(u,'_blank');
 }
 function openSupport(){
@@ -338,7 +339,7 @@ async function home(){
   };
   $('tgs').onclick=shareInvite;
   $('cp').onclick=()=>{
-    const t='Заходи в Skinvera: '+inviteLink()+' Мой код: '+me.ref_code;
+    const t='Заходи в Skinvera: '+inviteLink()+' Мой код: '+me.ref_code+'\nВ браузере: '+webLink();
     if(navigator.clipboard)navigator.clipboard.writeText(t);
     $('cp').textContent='Скопировано';
   };
@@ -988,9 +989,9 @@ async function sSettings(a){
   const dd=[1,2,3,4,5,6,7].map(i=>`<div class="muted">День ${i}${i===7?' (подарок)':''}</div><input id="sd${i}" type="number" value="${esc(ST['daily_d'+i]||DD[i-1])}">`).join('');
   a.innerHTML=`<div class="card"><h3>Ежедневная награда по дням</h3><div class="muted">Поставь любую сумму монет на каждый из 7 дней. Серия повторяется каждую неделю.</div>${dd}<div class="muted">Дополнительный подарок в каждый 30-й день серии</div><input id="sb3" type="number" value="${esc(ST.daily_month_bonus||500)}"></div>
   <div class="card"><h3>Приглашение друга</h3><div class="muted">Сколько монет получают оба игрока</div><input id="sb1" type="number" value="${esc(ST.invite_bonus||500)}"></div>
-  <div class="card"><h3>Telegram</h3><div class="muted">Ник бота без @ (для ссылок-приглашений)</div><input id="sbt" placeholder="SkinveraBot" value="${esc(ST.bot_username||'')}"><div class="muted">Ник поддержки в Telegram без @ (если пусто, кнопка «Поддержка» откроет почту)</div><input id="ssp" placeholder="support_nick" value="${esc(ST.support_tg||'')}"><label class="row" style="border:0"><span>Сайт только в Telegram (в браузере выключен для игроков)</span><input id="stg" type="checkbox" style="width:auto" ${ST.tg_only==='1'?'checked':''}></label><button class="btn" id="sbs">Сохранить всё</button><div id="sbm" class="muted"></div></div>`;
+  <div class="card"><h3>Telegram</h3><div class="muted">Ник бота без @ (для ссылок-приглашений)</div><input id="sbt" placeholder="SkinveraBot" value="${esc(ST.bot_username||'')}"><div class="muted">Ник поддержки в Telegram без @ (если пусто, кнопка «Поддержка» откроет почту)</div><input id="ssp" placeholder="support_nick" value="${esc(ST.support_tg||'')}"><div class="muted">Короткое имя Mini App (из @BotFather, команда /newapp), например play</div><input id="sap" placeholder="play" value="${esc(ST.app_name||'')}"><label class="row" style="border:0"><span>Сайт только в Telegram (в браузере выключен для игроков)</span><input id="stg" type="checkbox" style="width:auto" ${ST.tg_only==='1'?'checked':''}></label><button class="btn" id="sbs">Сохранить всё</button><div id="sbm" class="muted"></div></div>`;
   $('sbs').onclick=async()=>{
-    const list=[1,2,3,4,5,6,7].map(i=>['daily_d'+i,$('sd'+i).value.trim()]).concat([['daily_month_bonus',$('sb3').value.trim()],['invite_bonus',$('sb1').value.trim()],['bot_username',$('sbt').value.trim().replace(/^@/,'')],['support_tg',$('ssp').value.trim().replace(/^@/,'')],['tg_only',$('stg').checked?'1':'0']]);
+    const list=[1,2,3,4,5,6,7].map(i=>['daily_d'+i,$('sd'+i).value.trim()]).concat([['daily_month_bonus',$('sb3').value.trim()],['invite_bonus',$('sb1').value.trim()],['bot_username',$('sbt').value.trim().replace(/^@/,'')],['support_tg',$('ssp').value.trim().replace(/^@/,'')],['app_name',$('sap').value.trim().replace(/^@/,'')],['tg_only',$('stg').checked?'1':'0']]);
     for(const [k,v] of list){
       const {error}=await sb.rpc('set_setting',{p_key:k,p_value:v});
       if(error){$('sbm').textContent='Ошибка ('+k+'): '+error.message;return}
